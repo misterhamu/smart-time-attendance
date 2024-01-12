@@ -12,6 +12,7 @@ const kanit = Kanit({
   style: ['normal', 'italic'],
   subsets: ['latin'],
   display: 'swap',
+  variable: '--font-kanit',
 })
 
 export const metadata: Metadata = {
