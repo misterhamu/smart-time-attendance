@@ -7,7 +7,7 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
 export type FormSubmit = {
   location: string;
   remark: string;
-}
+};
 
 export type CheckInOut = {
   id: string;
@@ -23,43 +23,48 @@ export type CheckInOut = {
 export type MyLocation = {
   lat: number;
   lng: number;
-}
+};
 
 export interface AttendanceRecordResponse {
   message: string;
-  data:    AttendanceRecord[];
+  data: AttendanceRecord[];
 }
 
 export interface AttendanceRecord {
-  id:           number;
-  mobile:       string;
-  checkin:      Checkin;
-  checkout:     Checkin;
-  created_at:   number;
-  updated_at:   number;
+  id: number;
+  mobile: string;
+  checkin: Checkin;
+  checkout: Checkin;
+  created_at: number;
+  updated_at: number;
   tpc_employee: TpcEmployee;
+  record_id: string;
 }
 
 export interface Checkin {
-  id:         string;
-  gpsLat:     number;
-  gpsLng:     number;
-  location:   string;
-  address:    string;
-  image:      string;
-  remark:     string;
+  id: string;
+  gpsLat: number;
+  gpsLng: number;
+  location: string;
+  address: string;
+  image: string;
+  remark: string;
   createdAt?: number;
 }
 
 export interface TpcEmployee {
-  id:         number;
-  mobile:     string;
-  position:   string;
-  last_name:  string;
+  id: number;
+  mobile: string;
+  position: string;
+  last_name: string;
   created_at: number;
   first_name: string;
 }
 
 export interface LoginRequest {
-  mobile: string
+  mobile: string;
+}
+
+export interface RecordRequest {
+  id: string;
 }

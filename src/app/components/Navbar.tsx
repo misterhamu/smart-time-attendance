@@ -13,7 +13,7 @@ import { logout } from "@libs/api";
 type Props = {};
 
 export default function Navbar({}: Props) {
-  const pageNoNavBar = ["/login"];
+  const pageNoNavBar = ["/login","/record"];
   const pathname = usePathname();
   const router = useRouter();
 

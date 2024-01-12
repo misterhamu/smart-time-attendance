@@ -1,9 +1,14 @@
-import { AttendanceRecordResponse, LoginRequest } from "@/types/index";
+import { AttendanceRecordResponse, LoginRequest, RecordRequest } from "@/types/index";
 import HttpClient from "./http-clients";
 import { cookies } from "next/headers";
+import axios from "axios";
 
 export const login = async (req: LoginRequest) => {
   return HttpClient.post("/api/login", req);
+};
+
+export const record = async (req: RecordRequest) => {
+  return HttpClient.post("/api/record", req);
 };
 
 export const checkIn = async (req: FormData) => {
@@ -12,8 +17,8 @@ export const checkIn = async (req: FormData) => {
   });
 };
 
-export const checkOut = async (req: FormData, id: number) => {
-  req.append("id", String(id));
+export const checkOut = async (req: FormData, id: string) => {
+  req.append("recordId", String(id));
   return HttpClient.patch("/api/register-attendance", req, {
     headers: { "Content-Type": "multipart/form-data" },
   });
@@ -25,4 +30,18 @@ export const attendanceRecord = async () => {
 
 export const logout = async () => {
   return HttpClient.post(`/api/logout`,{});
+};
+
+export const sendLineNoti = async (message: string) => {
+  var formData = {
+    message: message,
+    // 'imageFile': pictureurl
+  };
+
+  return axios.post("https://notify-api.line.me/api/notify", formData, {
+    headers: {
+      Authorization: `Bearer ${process.env.LINE_TOKEN}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+  });
 };

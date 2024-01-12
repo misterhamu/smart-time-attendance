@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 export const POST = async (req: Request, res: Response) => {
   if (cookies().get("token")) {
     cookies().delete("token");
+    cookies().delete("userInfo");
   }
   return NextResponse.json(
     {

@@ -1,7 +1,12 @@
 "use server";
 
-import { CheckInOut, MyLocation } from "@/types/index";
-import { getAddressFromLatLong } from "@libs/helper";
+import { CheckInOut, MyLocation, TpcEmployee } from "@/types/index";
+import { sendLineNoti } from "@libs/api";
+import {
+  getAddressFromLatLong,
+  getShortThaiDateFormat,
+  getTime24Format,
+} from "@libs/helper";
 import { createClient } from "@supabase/supabase-js";
 import { importJWK, jwtVerify } from "jose";
 import { cookies } from "next/headers";
@@ -14,9 +19,7 @@ const supabase = createClient(
 );
 
 export const GET = async (req: Request, res: Response) => {
-
   try {
-
     const token = cookies().get("token")!.value;
     const secretJWK = {
       kty: "oct",
@@ -25,11 +28,11 @@ export const GET = async (req: Request, res: Response) => {
     const secretKey = await importJWK(secretJWK, "HS256");
     const { payload } = await jwtVerify(token, secretKey);
 
-    console.log("payload:",payload)
-    if(!payload){
+    console.log("payload:", payload);
+    if (!payload) {
       // TODO: handle 401
     }
-    
+
     const currentTime = new Date();
     currentTime.setHours(0, 0, 0, 0);
     const timeZoneOffset = 7 * 60;
@@ -73,8 +76,9 @@ export const POST = async (req: Request, res: Response) => {
   const remark = formReq.get("remark");
   const myLocation: MyLocation = JSON.parse(String(formReq.get("myLocation")));
 
+  const recordId = uuidv4()
   const record: CheckInOut = {
-    id: uuidv4(),
+    id: recordId,
     gpsLat: myLocation.lat,
     gpsLng: myLocation.lng,
     location: String(location),
@@ -93,8 +97,8 @@ export const POST = async (req: Request, res: Response) => {
     const secretKey = await importJWK(secretJWK, "HS256");
     const { payload } = await jwtVerify(token, secretKey);
 
-    console.log("payload:",payload)
-    if(!payload){
+    console.log("payload:", payload);
+    if (!payload) {
       // TODO: handle 401
     }
 
@@ -102,6 +106,7 @@ export const POST = async (req: Request, res: Response) => {
       .from("tpc_time_attendance_record")
       .insert([
         {
+          record_id: recordId,
           created_at: now,
           mobile: payload.mobile,
           checkin: record,
@@ -116,6 +121,22 @@ export const POST = async (req: Request, res: Response) => {
       );
     }
 
+    // Line noti
+    const userInfo: TpcEmployee = JSON.parse(cookies().get("userInfo")!.value);
+    console.log("userInfo: ", userInfo);
+    const message = `📣📣 ตอกบัตเข้างาน 📣📣 \n🔻 ชื่อ-นามสกุล\n       - ${
+      userInfo.first_name
+    } ${userInfo.last_name}\n🔻 แผนก/ตำแหน่ง\n       - ${
+      userInfo.position
+    }\n🔻 วันที่-เวลา\n       - วันที่ ${getShortThaiDateFormat(
+      new Date(record.createdAt)
+    )}\n       - เวลา ${getTime24Format(
+      new Date(record.createdAt)
+    )} น.\n🔻 สถานที่ปฏิบัติงาน\n       - ${location}\n🔻 หมายเหตุ\n       - ${remark}\n🔻 สถานที่ตาม GPS\n       - ${
+      record.address
+    }\n📌 ตรวจสอบข้อมูลที่ถูกบันทึก : ${process.env.NEXT_PUBLIC_URL}/record/?id=${recordId}
+    `;
+    sendLineNoti(message);
     return NextResponse.json(
       {
         message: "Create check-in successfully.",
@@ -136,7 +157,7 @@ export const PATCH = async (req: Request, res: Response) => {
   const now = currentTime.getTime() + timeZoneOffset * 60 * 1000;
 
   const formReq = await req.formData();
-  const recordId = formReq.get("id");
+  const recordId = formReq.get("recordId");
   const location = formReq.get("location");
   const remark = formReq.get("remark");
   const myLocation: MyLocation = JSON.parse(String(formReq.get("myLocation")));
@@ -153,7 +174,6 @@ export const PATCH = async (req: Request, res: Response) => {
   };
 
   try {
-
     const token = cookies().get("token")!.value;
     const secretJWK = {
       kty: "oct",
@@ -162,15 +182,15 @@ export const PATCH = async (req: Request, res: Response) => {
     const secretKey = await importJWK(secretJWK, "HS256");
     const { payload } = await jwtVerify(token, secretKey);
 
-    console.log("payload:",payload)
-    if(!payload){
+    console.log("payload:", payload);
+    if (!payload) {
       // TODO: handle 401
     }
 
     const { data, error } = await supabase
       .from("tpc_time_attendance_record")
       .update({ checkout: record, updated_at: now })
-      .eq("id", recordId);
+      .eq("record_id", recordId);
 
     if (error) {
       console.log("error:", error);
@@ -179,6 +199,23 @@ export const PATCH = async (req: Request, res: Response) => {
         { status: 400 }
       );
     }
+
+    // Line noti
+    const userInfo: TpcEmployee = JSON.parse(cookies().get("userInfo")!.value);
+    console.log("userInfo: ", userInfo);
+    const message = `📣📣 ตอกบัตรออกงาน 📣📣 \n🔻 ชื่อ-นามสกุล\n       - ${
+      userInfo.first_name
+    } ${userInfo.last_name}\n🔻 แผนก/ตำแหน่ง\n       - ${
+      userInfo.position
+    }\n🔻 วันที่-เวลา\n       - วันที่ ${getShortThaiDateFormat(
+      new Date(record.createdAt)
+    )}\n       - เวลา ${getTime24Format(
+      new Date(record.createdAt)
+    )} น.\n🔻 สถานที่ปฏิบัติงาน\n       - ${location}\n🔻 หมายเหตุ\n       - ${remark}\n🔻 สถานที่ตาม GPS\n       - ${
+      record.address
+    }\n📌 ตรวจสอบข้อมูลที่ถูกบันทึก : ${process.env.NEXT_PUBLIC_URL}/record/?id=${recordId}
+    `;
+    sendLineNoti(message);
 
     return NextResponse.json(
       {

@@ -72,8 +72,6 @@ export default function Home() {
   }
   return (
     <>
-      {/* <h2>Home</h2>
-      <Link href={"/login"}>login</Link> */}
       <div className="flex flex-col gap-3 mt-3 justify-center items-center">
         <Card
           isBlurred
@@ -295,7 +293,7 @@ function ModalFormTimeAttendance({
       if (!record || record.checkout) {
         return checkIn(form);
       } else {
-        return checkOut(form, record.id);
+        return checkOut(form, record.record_id);
       }
     },
     onMutate: () => {

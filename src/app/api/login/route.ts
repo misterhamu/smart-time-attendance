@@ -47,6 +47,7 @@ export const POST = async (req: Request, res: Response) => {
       .sign(secretKey);
 
     cookies().set("token", token);
+    cookies().set("userInfo", JSON.stringify(tpc_employee && tpc_employee[0]));
 
     return NextResponse.json(
       {
