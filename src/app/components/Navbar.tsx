@@ -6,14 +6,16 @@ import {
 } from "@nextui-org/navbar";
 import NextLink from "next/link";
 import { ThemeSwitch } from "./Theme-switch";
-import { usePathname } from "next/navigation";
-import { Image } from "@nextui-org/react";
+import { usePathname, useRouter } from "next/navigation";
+import { Button, Image } from "@nextui-org/react";
+import { logout } from "@libs/api";
 
 type Props = {};
 
 export default function Navbar({}: Props) {
   const pageNoNavBar = ["/login"];
   const pathname = usePathname();
+  const router = useRouter();
 
   if (pageNoNavBar.includes(pathname)) {
     return;
@@ -38,6 +40,16 @@ export default function Navbar({}: Props) {
       </NavbarContent>
       <NavbarContent className="basis-1 pl-4" justify="end">
         <ThemeSwitch />
+        <Button
+          variant="bordered"
+          size="sm"
+          onClick={() => {
+            logout();
+            router.replace("/login");
+          }}
+        >
+          ออกจากระบบ
+        </Button>
       </NavbarContent>
     </NextUINavbar>
   );

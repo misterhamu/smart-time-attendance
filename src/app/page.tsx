@@ -1,30 +1,75 @@
 "use client";
-import { Camera, Click } from "@components/Icons";
-import { useTime } from "@hooks/useTime";
-import { getShortThaiDateFormat, getThaiDateFormat } from "@libs/helper";
 import {
+  AttendanceRecord,
+  AttendanceRecordResponse,
+  FormSubmit,
+  MyLocation,
+  TpcEmployee,
+} from "@/types/index";
+import { Camera, Click } from "@components/Icons";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useTime } from "@hooks/useTime";
+import { attendanceRecord, checkIn, checkOut } from "@libs/api";
+import {
+  getShortThaiDateFormat,
+  getThaiDateFormat,
+  getTime24Format,
+} from "@libs/helper";
+import {
+  Button,
   Card,
   CardBody,
-  Button,
+  Image,
+  Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
-  useDisclosure,
-  Input,
-  Image,
   Textarea,
+  useDisclosure,
 } from "@nextui-org/react";
-import Link from "next/link";
-import * as yup from "yup";
+import { UseQueryResult, useMutation, useQuery } from "@tanstack/react-query";
+import { AxiosResponse } from "axios";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { LabelHTMLAttributes, useEffect, useRef, useState } from "react";
+import * as yup from "yup";
+import Loading from "./loading";
 
 export default function Home() {
+  const [userInfo, setUserInfo] = useState<TpcEmployee>();
+  const record = useAttendaceRecord();
   const time = useTime();
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const [myLocation, setMyLocation] = useState({
+    lat: 0,
+    lng: 0,
+  });
+
+  const register = () => {
+    if ("geolocation" in navigator) {
+      onOpen();
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log(latitude, longitude);
+          setMyLocation({ lat: latitude, lng: longitude });
+        },
+        (error) => {
+          console.error("Error getting location:", error.message);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+    }
+  };
+
+  useEffect(() => {
+    setUserInfo(JSON.parse(localStorage.getItem("userInfo") || ""));
+  }, []);
+  if (record.loading) {
+    return <Loading />;
+  }
   return (
     <>
       {/* <h2>Home</h2>
@@ -37,8 +82,10 @@ export default function Home() {
         >
           <CardBody>
             <div className="flex justify-between">
-              <p className="max-w-[200px]">นายสมชาย ใจดี</p>
-              <p>พนักงานขาย</p>
+              <p className="max-w-[200px]">
+                {userInfo?.first_name} {userInfo?.last_name}
+              </p>
+              <p>{userInfo?.position}</p>
             </div>
           </CardBody>
         </Card>
@@ -54,18 +101,30 @@ export default function Home() {
                   <p className="text-7xl">{time.data}</p>
                   <p>{getThaiDateFormat(new Date())}</p>
                 </div>
-
                 <Button
                   color="primary"
-                  className=" w-[150px] h-[150px] shadow-md text-xl bg-gradient-to-r from-[#9986E2] to-[#3E81E0] hover:from-[#3E81E0] transition duration-300 delay-150 hover:delay-300"
+                  className={`w-[150px] h-[150px] shadow-md text-xl 
+                  bg-gradient-to-r
+                  ${
+                    !record.data || record.data.checkout
+                      ? "from-[#9986E2] to-[#3E81E0] hover:from-[#3E81E0] "
+                      : "from-[#EB3D77] to-[#8A309A] hover:from-[#8A309A] hover:to-[#EB3D77]"
+                  } 
+                  transition duration-300 delay-150 hover:delay-300`}
                   size="lg"
                   radius="full"
                   variant="shadow"
-                  onClick={onOpen}
+                  onClick={() => {
+                    register();
+                  }}
                 >
                   <div className="flex flex-col justify-center items-center">
                     <Click />
-                    <p>ตรอกบัตรเข้า</p>
+                    <p>
+                      {!record.data || record.data.checkout
+                        ? "ตรอกบัตรเข้า"
+                        : "ตรอกบัตรออก"}
+                    </p>
                   </div>
                 </Button>
               </div>
@@ -82,21 +141,39 @@ export default function Home() {
               <p className="max-w-[200px] text-xl font-semibold">
                 ประวัติงานล่าสุด
               </p>
-              <div className="flex flex-col gap-3">
-                <p>{getShortThaiDateFormat(new Date())}</p>
-                <div className="flex flex-col gap-3 font-light">
-                  <div className="flex-1">
-                    <p className="font-semibold">เวลาเข้า</p>
-                    <p>08:09 น.</p>
-                    <p>เอสพีเอ็ม ออดิโอ</p>
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold">เวลาออก</p>
-                    <p>18:42 น.</p>
-                    <p>บางหว้า อะไหล่ยนต์</p>
+              {record.data ? (
+                <div className="flex flex-col gap-3">
+                  <p>
+                    {getShortThaiDateFormat(new Date(record.data.created_at))}
+                  </p>
+                  <div className="flex flex-col gap-3 font-light">
+                    <div className="flex-1">
+                      <p className="font-semibold">เวลาเข้า</p>
+                      <p>
+                        {(record.data.checkin &&
+                          `${getTime24Format(
+                            new Date(Number(record.data.checkin.createdAt))
+                          )} น.`) ||
+                          "-"}
+                      </p>
+                      <p>{record.data.checkin?.location || "-"}</p>
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold">เวลาออก</p>
+                      <p>
+                        {(record.data.checkout &&
+                          `${getTime24Format(
+                            new Date(Number(record.data.checkout.createdAt))
+                          )} น.`) ||
+                          "-"}
+                      </p>
+                      <p>{record.data.checkout?.location || ""}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <p className="font-light">ไม่พบงานล่าสุด</p>
+              )}
             </div>
           </CardBody>
         </Card>
@@ -114,18 +191,37 @@ export default function Home() {
             "bg-gradient-to-t from-zinc-900 to-zinc-900/10 backdrop-opacity-10",
         }}
       >
-        <ModalFormTimeAttendance />
+        <ModalFormTimeAttendance
+          onClose={onClose}
+          myLocation={myLocation}
+          queryRecord={record.query}
+          record={record.data}
+        />
       </Modal>
     </>
   );
 }
 
-function ModalFormTimeAttendance() {
-  const schema = yup
-    .object({
-      localtion: yup.string().max(50, "").required(),
-    })
-    .required();
+type ModalType = {
+  onClose: () => void;
+  myLocation: MyLocation;
+  queryRecord: UseQueryResult<
+    AxiosResponse<AttendanceRecordResponse, any>,
+    Error
+  >;
+  record: AttendanceRecord;
+};
+
+function ModalFormTimeAttendance({
+  onClose,
+  myLocation,
+  queryRecord,
+  record,
+}: ModalType) {
+  const schema = yup.object({
+    location: yup.string().max(100, "สูงสุด 100 ตัวอักษร").required(),
+    remark: yup.string().max(500, "สูงสุด 500 ตัวอักษร"),
+  });
 
   const {
     register,
@@ -136,19 +232,26 @@ function ModalFormTimeAttendance() {
     setValue,
     reset,
     formState: { errors, isValid },
-  } = useForm<any>({
+  } = useForm<FormSubmit>({
+    // @ts-ignore
     resolver: yupResolver(schema),
     mode: "onChange",
     reValidateMode: "onChange",
+    defaultValues: {
+      location: "",
+      remark: "",
+    },
   });
 
   const [isCaptureState, setIsCaptureState] = useState(false);
   const [source, setSource] = useState("");
+  const [file, setFile] = useState<File>();
 
   const handleCapture = (target: HTMLInputElement) => {
     if (target.files) {
       if (target.files.length !== 0) {
         const file = target.files[0];
+        setFile(file);
         const newUrl = URL.createObjectURL(file);
         setSource(newUrl);
         setIsCaptureState(false);
@@ -160,7 +263,7 @@ function ModalFormTimeAttendance() {
     if (!source) {
       setIsCaptureState(!isCaptureState);
     } else {
-      onClose();
+      // onClose();
     }
   };
 
@@ -172,11 +275,47 @@ function ModalFormTimeAttendance() {
     }
   };
 
+  const onSubmit = async (data: FormSubmit) => {
+    const imageFile = file;
+    let form = new FormData();
+    form.append("location", data.location);
+    form.append("remark", data.remark);
+    form.append("file", imageFile!);
+    form.append("myLocation", JSON.stringify(myLocation));
+
+    // registeAattendance(initialState,form);
+    registerAttendance.mutate(form);
+  };
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const registerAttendance = useMutation({
+    mutationFn: async (form: FormData) => {
+      console.log(form.get("file"));
+      if (!record || record.checkout) {
+        return checkIn(form);
+      } else {
+        return checkOut(form, record.id);
+      }
+    },
+    onMutate: () => {
+      setIsLoading(true);
+    },
+    onSuccess: () => {
+      onClose();
+      queryRecord.refetch();
+    },
+    onError: () => {},
+    onSettled: () => {
+      setIsLoading(false);
+    },
+  });
+
   return (
     <>
       <ModalContent>
         {(onClose) => (
-          <>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <ModalHeader className="flex flex-col gap-1">
               {!isCaptureState ? "กรุณากรอกข้อมูล" : "กรุณาถ่ายภาพสถานที่"}
             </ModalHeader>
@@ -185,7 +324,7 @@ function ModalFormTimeAttendance() {
                 <>
                   <Controller
                     control={control}
-                    name="localtion"
+                    name="location"
                     render={({ field }) => (
                       <Input
                         {...field}
@@ -198,11 +337,18 @@ function ModalFormTimeAttendance() {
                       />
                     )}
                   />
-                  <Textarea
-                    label="หมายเหตุ/บันทึกการปฏิบัติงาน"
-                    placeholder="* สามารถเว้นว่างได้"
-                    className="input"
-                    size="lg"
+                  <Controller
+                    control={control}
+                    name="remark"
+                    render={({ field }) => (
+                      <Textarea
+                        {...field}
+                        label="หมายเหตุ/บันทึกการปฏิบัติงาน"
+                        placeholder="* สามารถเว้นว่างได้"
+                        className="input"
+                        size="lg"
+                      />
+                    )}
                   />
 
                   {source && (
@@ -249,6 +395,7 @@ function ModalFormTimeAttendance() {
 
                           <input
                             accept="image/*"
+                            name="image"
                             id="image"
                             type="file"
                             className="input"
@@ -279,6 +426,9 @@ function ModalFormTimeAttendance() {
               </Button>
               {!isCaptureState && (
                 <Button
+                  isDisabled={!isValid}
+                  isLoading={isLoading}
+                  type={!source ? "button" : "submit"}
                   color="primary"
                   onPress={() => {
                     handleConfirm(onClose);
@@ -289,9 +439,26 @@ function ModalFormTimeAttendance() {
                 </Button>
               )}
             </ModalFooter>
-          </>
+          </form>
         )}
       </ModalContent>
     </>
   );
 }
+
+const useAttendaceRecord = () => {
+  const query = useQuery({
+    queryKey: ["record"],
+    queryFn: async () => {
+      return attendanceRecord();
+    },
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
+
+  return {
+    loading: query.isLoading || query.isFetching,
+    data: query.data?.data.data[0] as AttendanceRecord,
+    query: query,
+  };
+};
