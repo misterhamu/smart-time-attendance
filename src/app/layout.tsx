@@ -1,12 +1,18 @@
 import clsx from "clsx";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Kanit } from "next/font/google";
 import Navbar from "./components/Navbar";
 import "./globals.scss";
 import { Providers } from "./providers";
 import { useRef } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
+const kanit = Kanit({
+  weight: ['300','400', '500','600','700'],
+  style: ['normal', 'italic'],
+  subsets: ['latin'],
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: "Time Attendance",
@@ -36,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={kanit.className}>
       <body className={clsx("min-h-screen  bg antialiased")}>
         <Providers themeProps={{ attribute: "class", defaultTheme: "light" }}>
           <div className="relative flex flex-col min-h-screen ">
