@@ -16,8 +16,8 @@ const kanit = Kanit({
 })
 
 export const metadata: Metadata = {
-  title: "Time Attendance",
-  description: "Time Attendance App",
+  title: "Smart Time Attendance",
+  description: "Smart Time Attendance App",
   generator: "Next.js",
   manifest: "/manifest.json",
   keywords: [],
@@ -32,9 +32,19 @@ export const metadata: Metadata = {
   viewport:
     "minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover",
   icons: [
-    { rel: "apple-touch-icon", url: "icons/apple-touch-icon.png" },
-    { rel: "icon", url: "icons/favicon-32x32.png" },
+    { rel: "apple-touch-icon", url: "/icons/apple-touch-icon.png" },
+    { rel: "icon", url: "/icons/favicon-32x32.png" },
   ],
+  openGraph: {
+    type: "website",
+    url: process.env.NEXT_PUBLIC_URL,
+    title: "Smart Time Attendance",
+    description: "Smart Time Attendance App",
+    siteName: "Smart Time Attendance",
+    images: [{
+      url: "/icons/android-chrome-512x512.png",
+    }],
+  },
 };
 
 export default function RootLayout({

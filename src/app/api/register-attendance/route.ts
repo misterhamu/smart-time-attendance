@@ -35,7 +35,7 @@ export const GET = async (req: Request, res: Response) => {
 
     const currentTime = new Date();
     currentTime.setHours(0, 0, 0, 0);
-    const timeZoneOffset = 7 * 60;
+    const timeZoneOffset = 0 * 60;
     const today = currentTime.getTime() + timeZoneOffset * 60 * 1000;
     const endOfDay = currentTime.getTime() + 24 * 60 * 60 * 1000;
 
@@ -72,6 +72,7 @@ export const POST = async (req: Request, res: Response) => {
   const now = currentTime.getTime() + timeZoneOffset * 60 * 1000;
 
   const formReq = await req.formData();
+  const file = formReq.get("file") as File;
   const location = formReq.get("location");
   const remark = formReq.get("remark");
   const myLocation: MyLocation = JSON.parse(String(formReq.get("myLocation")));
@@ -102,6 +103,10 @@ export const POST = async (req: Request, res: Response) => {
       // TODO: handle 401
     }
 
+    // upload image
+    const fileName = await upload(file)
+    record.image = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/storages/${fileName}`
+
     const { data, error } = await supabase
       .from("tpc_time_attendance_record")
       .insert([
@@ -124,7 +129,7 @@ export const POST = async (req: Request, res: Response) => {
     // Line noti
     const userInfo: TpcEmployee = JSON.parse(cookies().get("userInfo")!.value);
     console.log("userInfo: ", userInfo);
-    const message = `📣📣 ตอกบัตเข้างาน 📣📣 \n🔻 ชื่อ-นามสกุล\n       - ${
+    const message = `📣📣 ตอกบัตรเข้างาน 📣📣 \n🔻 ชื่อ-นามสกุล\n       - ${
       userInfo.first_name
     } ${userInfo.last_name}\n🔻 แผนก/ตำแหน่ง\n       - ${
       userInfo.position
@@ -134,7 +139,9 @@ export const POST = async (req: Request, res: Response) => {
       new Date(record.createdAt)
     )} น.\n🔻 สถานที่ปฏิบัติงาน\n       - ${location}\n🔻 หมายเหตุ\n       - ${remark}\n🔻 สถานที่ตาม GPS\n       - ${
       record.address
-    }\n📌 ตรวจสอบข้อมูลที่ถูกบันทึก : ${process.env.NEXT_PUBLIC_URL}/record/?id=${recordId}
+    }\n🔻 ลิงก์แผนที่\n       - http://www.google.com/maps/place/${record.gpsLat},${record.gpsLng}
+    
+📌 ตรวจสอบข้อมูลที่ถูกบันทึก : ${process.env.NEXT_PUBLIC_URL}/record/?id=${recordId}
     `;
     sendLineNoti(message);
     return NextResponse.json(
@@ -157,6 +164,7 @@ export const PATCH = async (req: Request, res: Response) => {
   const now = currentTime.getTime() + timeZoneOffset * 60 * 1000;
 
   const formReq = await req.formData();
+  const file = formReq.get("file") as File;
   const recordId = formReq.get("recordId");
   const location = formReq.get("location");
   const remark = formReq.get("remark");
@@ -187,6 +195,10 @@ export const PATCH = async (req: Request, res: Response) => {
       // TODO: handle 401
     }
 
+    // upload image
+    const fileName = await upload(file)
+    record.image = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/storages/${fileName}`
+
     const { data, error } = await supabase
       .from("tpc_time_attendance_record")
       .update({ checkout: record, updated_at: now })
@@ -213,7 +225,9 @@ export const PATCH = async (req: Request, res: Response) => {
       new Date(record.createdAt)
     )} น.\n🔻 สถานที่ปฏิบัติงาน\n       - ${location}\n🔻 หมายเหตุ\n       - ${remark}\n🔻 สถานที่ตาม GPS\n       - ${
       record.address
-    }\n📌 ตรวจสอบข้อมูลที่ถูกบันทึก : ${process.env.NEXT_PUBLIC_URL}/record/?id=${recordId}
+    }\n🔻 ลิงก์แผนที่\n       - http://www.google.com/maps/place/${record.gpsLat},${record.gpsLng}
+    
+📌 ตรวจสอบข้อมูลที่ถูกบันทึก : ${process.env.NEXT_PUBLIC_URL}/record/?id=${recordId}
     `;
     sendLineNoti(message);
 
@@ -230,3 +244,16 @@ export const PATCH = async (req: Request, res: Response) => {
     );
   }
 };
+
+
+async function upload(file: File){
+  const uuid = uuidv4();
+  const { data, error } = await supabase.storage.from('storages').upload(uuid,file)
+  if (error) {
+    // Handle error
+    console.log(error)
+  } else {
+    // Handle success
+    return uuid
+  }
+}

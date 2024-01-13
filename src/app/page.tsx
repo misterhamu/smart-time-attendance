@@ -14,6 +14,7 @@ import {
   getShortThaiDateFormat,
   getThaiDateFormat,
   getTime24Format,
+  resizeFile,
 } from "@libs/helper";
 import {
   Button,
@@ -245,12 +246,15 @@ function ModalFormTimeAttendance({
   const [source, setSource] = useState("");
   const [file, setFile] = useState<File>();
 
-  const handleCapture = (target: HTMLInputElement) => {
+  const handleCapture = async (target: HTMLInputElement) => {
     if (target.files) {
       if (target.files.length !== 0) {
         const file = target.files[0];
-        setFile(file);
-        const newUrl = URL.createObjectURL(file);
+        const compressFile = await resizeFile(file) as File;
+        console.log(file)
+        console.log(compressFile)
+        setFile(compressFile);
+        const newUrl = URL.createObjectURL(compressFile);
         setSource(newUrl);
         setIsCaptureState(false);
       }

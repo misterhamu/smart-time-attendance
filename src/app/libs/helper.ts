@@ -6,6 +6,8 @@ import {
   setRegion,
 } from "react-geocode";
 
+import Resizer from "react-image-file-resizer";
+
 export const clockRealTime = () => {
   var today = new Date();
   var h = String(today.getHours());
@@ -55,8 +57,8 @@ export function toRadians(degrees: number): number {
 export const getTime24Format = (date: Date) => {
   const formattedDate = date.toLocaleString("en-US", {
     hour12: false,
-    hour: '2-digit',
-    minute: '2-digit',
+    hour: "2-digit",
+    minute: "2-digit",
   });
   return formattedDate;
 };
@@ -101,7 +103,6 @@ export const getLatLongByLocation = async (location: string) => {
   const result = await fromAddress(location)
     .then(({ results }) => {
       const { lat, lng } = results[0].geometry.location;
-      console.log(lat, lng);
       return { lat, lng };
     })
     .catch(console.error);
@@ -117,11 +118,25 @@ export const getAddressFromLatLong = async (location: {
   setRegion("th");
   const result = await fromLatLng(location.lat, location.lng)
     .then(({ results }) => {
-      console.log(results);
       const { lat, lng } = results[0].geometry.location;
-      console.log(lat, lng);
       return results[0].formatted_address;
     })
     .catch(console.error);
   return result;
 };
+
+export const resizeFile = async (file: File) =>
+  new Promise((resolve) => {
+    Resizer.imageFileResizer(
+      file,
+      650,
+      500,
+      "JPEG",
+      70,
+      0,
+      (uri) => {
+        resolve(uri);
+      },
+      "file"
+    );
+  });
