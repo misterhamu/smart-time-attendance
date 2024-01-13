@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     description: "Smart Time Attendance App",
     siteName: "Smart Time Attendance",
     images: [{
-      url: "/icons/android-chrome-512x512.png",
+      url: "https://smart-time-attendance.vercel.app/icons/android-chrome-512x512.png",
     }],
   },
 };
