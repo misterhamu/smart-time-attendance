@@ -52,7 +52,11 @@ export default function Page({}: Props) {
           <Divider />
 
           <div className="flex flex-col gap-3">
-            <p className="text-2xl">ตอกบัตรเข้างาน</p>
+            <p className="text-2xl">
+              {record.data.tpc_employee.position === "พนักงานขาย"
+                ? "ตอกบัตรเข้างาน"
+                : "เช็คอิน"}
+            </p>
             {record.data.checkin.image && (
               <div className="w-full">
                 <Image
@@ -76,7 +80,7 @@ export default function Page({}: Props) {
               <div>
                 <p>เวลา</p>
                 <p className="text-xl">
-                  {getTime24Format(new Date(record.data.checkin.createdAt!))}
+                  {getTime24Format(new Date(record.data.checkin.createdAt!))} น.
                 </p>
               </div>
             </div>
@@ -137,7 +141,8 @@ export default function Page({}: Props) {
                       {record.data.checkout &&
                         getTime24Format(
                           new Date(record.data.checkout.createdAt!)
-                        )}
+                        )}{" "}
+                      น.
                     </p>
                   </div>
                 </div>

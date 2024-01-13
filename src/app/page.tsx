@@ -68,6 +68,7 @@ export default function Home() {
   useEffect(() => {
     setUserInfo(JSON.parse(localStorage.getItem("userInfo") || ""));
   }, []);
+
   if (record.loading) {
     return <Loading />;
   }
@@ -100,9 +101,12 @@ export default function Home() {
                   <p className="text-7xl">{time.data}</p>
                   <p>{getThaiDateFormat(new Date())}</p>
                 </div>
-                <Button
-                  color="primary"
-                  className={`w-[150px] h-[150px] shadow-md text-xl 
+
+                {/* Button for sale */}
+                {userInfo?.position === "พนักงานขาย" && (
+                  <Button
+                    color="primary"
+                    className={`w-[150px] h-[150px] shadow-md text-xl 
                   bg-gradient-to-r
                   ${
                     !record.data || record.data.checkout
@@ -110,22 +114,43 @@ export default function Home() {
                       : "from-[#EB3D77] to-[#8A309A] hover:from-[#8A309A] hover:to-[#EB3D77]"
                   } 
                   transition duration-300 delay-150 hover:delay-300`}
-                  size="lg"
-                  radius="full"
-                  variant="shadow"
-                  onClick={() => {
-                    register();
-                  }}
-                >
-                  <div className="flex flex-col justify-center items-center">
-                    <Click />
-                    <p>
-                      {!record.data || record.data.checkout
-                        ? "ตรอกบัตรเข้า"
-                        : "ตรอกบัตรออก"}
-                    </p>
-                  </div>
-                </Button>
+                    size="lg"
+                    radius="full"
+                    variant="shadow"
+                    onClick={() => {
+                      register();
+                    }}
+                  >
+                    <div className="flex flex-col justify-center items-center">
+                      <Click />
+                      <p>
+                        {!record.data || record.data.checkout
+                          ? "ตรอกบัตรเข้า"
+                          : "ตรอกบัตรออก"}
+                      </p>
+                    </div>
+                  </Button>
+                )}
+
+                {userInfo?.position === "พนักงานขับรถ" && (
+                  <Button
+                    color="primary"
+                    className={`w-[150px] h-[150px] shadow-md text-xl 
+                  bg-gradient-to-r from-[#9986E2] to-[#3E81E0] hover:from-[#3E81E0] 
+                  transition duration-300 delay-150 hover:delay-300`}
+                    size="lg"
+                    radius="full"
+                    variant="shadow"
+                    onClick={() => {
+                      register();
+                    }}
+                  >
+                    <div className="flex flex-col justify-center items-center">
+                      <Click />
+                      <p>เช็คอิน</p>
+                    </div>
+                  </Button>
+                )}
               </div>
             </div>
           </CardBody>
@@ -147,7 +172,9 @@ export default function Home() {
                   </p>
                   <div className="flex flex-col gap-3 font-light">
                     <div className="flex-1">
-                      <p className="font-semibold">เวลาเข้า</p>
+                      <p className="font-semibold">
+                        {userInfo?.position === "พนักงานขาย" ?"เวลาเข้า" : "เวลาเช็คอิน"}
+                        </p>
                       <p>
                         {(record.data.checkin &&
                           `${getTime24Format(
@@ -157,17 +184,20 @@ export default function Home() {
                       </p>
                       <p>{record.data.checkin?.location || "-"}</p>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-semibold">เวลาออก</p>
-                      <p>
-                        {(record.data.checkout &&
-                          `${getTime24Format(
-                            new Date(Number(record.data.checkout.createdAt))
-                          )} น.`) ||
-                          "-"}
-                      </p>
-                      <p>{record.data.checkout?.location || ""}</p>
-                    </div>
+                    {record.data.checkout && (
+                       <div className="flex-1">
+                       <p className="font-semibold">เวลาออก</p>
+                       <p>
+                         {(record.data.checkout &&
+                           `${getTime24Format(
+                             new Date(Number(record.data.checkout.createdAt))
+                           )} น.`) ||
+                           "-"}
+                       </p>
+                       <p>{record.data.checkout?.location || ""}</p>
+                     </div>
+                    )}
+                   
                   </div>
                 </div>
               ) : (
@@ -195,6 +225,7 @@ export default function Home() {
           myLocation={myLocation}
           queryRecord={record.query}
           record={record.data}
+          userInfo={userInfo}
         />
       </Modal>
     </>
@@ -209,6 +240,7 @@ type ModalType = {
     Error
   >;
   record: AttendanceRecord;
+  userInfo?: TpcEmployee;
 };
 
 function ModalFormTimeAttendance({
@@ -216,6 +248,7 @@ function ModalFormTimeAttendance({
   myLocation,
   queryRecord,
   record,
+  userInfo,
 }: ModalType) {
   const schema = yup.object({
     location: yup.string().max(100, "สูงสุด 100 ตัวอักษร").required(),
@@ -250,9 +283,9 @@ function ModalFormTimeAttendance({
     if (target.files) {
       if (target.files.length !== 0) {
         const file = target.files[0];
-        const compressFile = await resizeFile(file) as File;
-        console.log(file)
-        console.log(compressFile)
+        const compressFile = (await resizeFile(file)) as File;
+        console.log(file);
+        console.log(compressFile);
         setFile(compressFile);
         const newUrl = URL.createObjectURL(compressFile);
         setSource(newUrl);
@@ -294,7 +327,7 @@ function ModalFormTimeAttendance({
   const registerAttendance = useMutation({
     mutationFn: async (form: FormData) => {
       console.log(form.get("file"));
-      if (!record || record.checkout) {
+      if (!record || record.checkout || userInfo?.position === "พนักงานขับรถ") {
         return checkIn(form);
       } else {
         return checkOut(form, record.record_id);
