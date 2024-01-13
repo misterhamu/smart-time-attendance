@@ -401,8 +401,8 @@ export const Camera: React.FC<IconSvgProps> = ({
 
   return (
     <svg
-    width={size || Number(width)}
-    height={size || Number(height)}
+      width={size || Number(width)}
+      height={size || Number(height)}
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -431,6 +431,31 @@ export const Camera: React.FC<IconSvgProps> = ({
           stroke-linejoin="round"
         ></path>{" "}
       </g>
+    </svg>
+  );
+};
+
+export const Marker: React.FC<IconSvgProps> = ({
+  size = 48,
+  width,
+  height,
+  ...props
+}: IconSvgProps) => {
+  const { theme } = useTheme();
+
+  return (
+    <svg
+      width={size || Number(width)}
+      height={size || Number(height)}
+      viewBox="0 0 1024 1024"
+      className="icon"
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M512 85.333333c-164.949333 0-298.666667 133.738667-298.666667 298.666667 0 164.949333 298.666667 554.666667 298.666667 554.666667s298.666667-389.717333 298.666667-554.666667c0-164.928-133.717333-298.666667-298.666667-298.666667z m0 448a149.333333 149.333333 0 1 1 0-298.666666 149.333333 149.333333 0 0 1 0 298.666666z"
+        fill="#FF3D00"
+      />
     </svg>
   );
 };

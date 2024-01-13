@@ -4,10 +4,14 @@ import { record } from "@libs/api";
 import { Card, CardBody, Divider, Image } from "@nextui-org/react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-import React from "react";
+import React, { ReactElement } from "react";
 import Loading from "../loading";
 import { getShortThaiDateFormat, getTime24Format } from "@libs/helper";
 import PageNotFound from "../not-found";
+import { Wrapper, Status } from "@googlemaps/react-wrapper";
+import GoogleMap from "@components/GoogleMap";
+import GoogleMapReact from "google-map-react";
+import { Marker } from "@components/Icons";
 
 type Props = {};
 
@@ -54,13 +58,13 @@ export default function Page({}: Props) {
             <p className="text-2xl">ตอกบัตรเข้างาน</p>
             {record.data.checkin.image && (
               <div className="w-full">
-              <Image
-                src={record.data.checkin.image}
-                width={0}
-                height={0}
-                alt=""
-                className="w-full object-cover"
-              ></Image>
+                <Image
+                  src={record.data.checkin.image}
+                  width={0}
+                  height={0}
+                  alt=""
+                  className="w-full object-cover"
+                ></Image>
               </div>
             )}
             <div className="flex justify-between">
@@ -92,11 +96,26 @@ export default function Page({}: Props) {
               <p>สถานที่ตาม GPS</p>
               <p className="text-xl">{record.data.checkin.address}</p>
             </div>
-            <iframe
-              width="100%"
-              height="100%"
-              src={`http://maps.google.co.in/maps?f=q&;source=s_q&q=${record.data.checkin.address}&ll=${record.data.checkin.gpsLat},${record.data.checkin.gpsLng}&;hl=en&amp;ie=UTF8&z=15&output=embed`}
-            ></iframe>
+
+            <div style={{ height: "250px", width: "100%" }}>
+              <GoogleMapReact
+                bootstrapURLKeys={{
+                  key: String(process.env.NEXT_PUBLIC_GOOGLEMAP_KEY),
+                }}
+                defaultCenter={{
+                  lat: record.data.checkin.gpsLat,
+                  lng: record.data.checkin.gpsLng,
+                }}
+                defaultZoom={15}
+                yesIWantToUseGoogleMapApiInternals
+              >
+                <MarkerIcon
+                  lat={record.data.checkin.gpsLat}
+                  lng={record.data.checkin.gpsLng}
+                />
+              </GoogleMapReact>
+            </div>
+
             <br />
           </div>
           {record.data.checkout && (
@@ -105,14 +124,14 @@ export default function Page({}: Props) {
               <div className="flex flex-col gap-3">
                 <p className="text-2xl">ตอกบัตรออกงาน</p>
                 {record.data.checkout.image && (
-              <Image
-                src={record.data.checkout.image}
-                width={0}
-                height={0}
-                className="w-full"
-                alt=""
-              ></Image>
-            )}
+                  <Image
+                    src={record.data.checkout.image}
+                    width={0}
+                    height={0}
+                    className="w-full"
+                    alt=""
+                  ></Image>
+                )}
                 <div className="flex justify-between">
                   <div>
                     <p>วันที่</p>
@@ -152,11 +171,25 @@ export default function Page({}: Props) {
                     {record.data.checkout && record.data.checkout.address}
                   </p>
                 </div>
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src={`http://maps.google.co.in/maps?f=q&;source=s_q&q=${record.data.checkin.address}&ll=${record.data.checkin.gpsLat},${record.data.checkin.gpsLng}&;hl=en&amp;ie=UTF8&z=15&output=embed`}
-                ></iframe>
+
+                <div style={{ height: "250px", width: "100%" }}>
+              <GoogleMapReact
+                bootstrapURLKeys={{
+                  key: String(process.env.NEXT_PUBLIC_GOOGLEMAP_KEY),
+                }}
+                defaultCenter={{
+                  lat: record.data.checkin.gpsLat,
+                  lng: record.data.checkin.gpsLng,
+                }}
+                defaultZoom={15}
+                yesIWantToUseGoogleMapApiInternals
+              >
+                <MarkerIcon
+                  lat={record.data.checkin.gpsLat}
+                  lng={record.data.checkin.gpsLng}
+                />
+              </GoogleMapReact>
+            </div>
               </div>
             </>
           )}
@@ -186,3 +219,5 @@ const useRecord = (id: string) => {
     error: query.isError || query.error,
   };
 };
+
+const MarkerIcon = ({lat,lng} :any) => <div><Marker/></div>;
