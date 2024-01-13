@@ -3,7 +3,7 @@ import { AttendanceRecord, RecordRequest } from "@/types/index";
 import { Marker } from "@components/Icons";
 import { record } from "@libs/api";
 import { getShortThaiDateFormat, getTime24Format } from "@libs/helper";
-import { Card, CardBody, Divider, Image } from "@nextui-org/react";
+import { Card, CardBody, Divider, Image, Link } from "@nextui-org/react";
 import { useQuery } from "@tanstack/react-query";
 import GoogleMapReact from "google-map-react";
 import { useSearchParams } from "next/navigation";
@@ -94,24 +94,16 @@ export default function Page({}: Props) {
               <p className="text-xl">{record.data.checkin.address}</p>
             </div>
 
-            <div style={{ height: "250px", width: "100%" }}>
-              <GoogleMapReact
-                bootstrapURLKeys={{
-                  key: String(process.env.NEXT_PUBLIC_GOOGLEMAP_KEY),
-                }}
-                defaultCenter={{
-                  lat: record.data.checkin.gpsLat,
-                  lng: record.data.checkin.gpsLng,
-                }}
-                defaultZoom={15}
-                yesIWantToUseGoogleMapApiInternals
-              >
-                <MarkerIcon
-                  lat={record.data.checkin.gpsLat}
-                  lng={record.data.checkin.gpsLng}
-                />
-              </GoogleMapReact>
-            </div>
+            <Link
+              style={{ height: "200px", width: "100%" }}
+              href={`http://www.google.com/maps/place/${record.data.checkin.gpsLat},${record.data.checkin.gpsLng}`}
+              target="_blank"
+            >
+              <GoogleMap
+                lat={record.data.checkin.gpsLat}
+                lng={record.data.checkin.gpsLng}
+              />
+            </Link>
 
             <br />
           </div>
@@ -169,24 +161,16 @@ export default function Page({}: Props) {
                   </p>
                 </div>
 
-                <div style={{ height: "250px", width: "100%" }}>
-              <GoogleMapReact
-                bootstrapURLKeys={{
-                  key: String(process.env.NEXT_PUBLIC_GOOGLEMAP_KEY),
-                }}
-                defaultCenter={{
-                  lat: record.data.checkin.gpsLat,
-                  lng: record.data.checkin.gpsLng,
-                }}
-                defaultZoom={15}
-                yesIWantToUseGoogleMapApiInternals
-              >
-                <MarkerIcon
-                  lat={record.data.checkin.gpsLat}
-                  lng={record.data.checkin.gpsLng}
-                />
-              </GoogleMapReact>
-            </div>
+                <Link
+                  style={{ height: "200px", width: "100%" }}
+                  href={`http://www.google.com/maps/place/${record.data.checkout.gpsLat},${record.data.checkout.gpsLng}`}
+                  target="_blank"
+                >
+                  <GoogleMap
+                    lat={record.data.checkout.gpsLat}
+                    lng={record.data.checkout.gpsLng}
+                  />
+                </Link>
               </div>
             </>
           )}
@@ -217,4 +201,37 @@ const useRecord = (id: string) => {
   };
 };
 
-const MarkerIcon = ({lat,lng} :any) => <div><Marker/></div>;
+type GoogleMapProps = {
+  lat: number;
+  lng: number;
+};
+
+const GoogleMap = ({ lat, lng }: GoogleMapProps) => {
+  return (
+    <GoogleMapReact
+      options={{
+        zoomControl: false,
+        draggable: false,
+        fullscreenControl: false,
+      }}
+      bootstrapURLKeys={{
+        key: String(process.env.NEXT_PUBLIC_GOOGLEMAP_KEY),
+        language: "th",
+      }}
+      defaultCenter={{
+        lat: lat,
+        lng: lng,
+      }}
+      defaultZoom={15}
+      yesIWantToUseGoogleMapApiInternals
+    >
+      <MarkerIcon lat={lat} lng={lng} />
+    </GoogleMapReact>
+  );
+};
+
+const MarkerIcon = ({ lat, lng }: any) => (
+  <div className="relative">
+    <div className="w-[16px] h-[16px] rounded-full bg-red-600"></div>
+  </div>
+);
