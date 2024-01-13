@@ -1,17 +1,14 @@
 "use client";
 import { AttendanceRecord, RecordRequest } from "@/types/index";
+import { Marker } from "@components/Icons";
 import { record } from "@libs/api";
+import { getShortThaiDateFormat, getTime24Format } from "@libs/helper";
 import { Card, CardBody, Divider, Image } from "@nextui-org/react";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "next/navigation";
-import React, { ReactElement } from "react";
-import Loading from "../loading";
-import { getShortThaiDateFormat, getTime24Format } from "@libs/helper";
-import PageNotFound from "../not-found";
-import { Wrapper, Status } from "@googlemaps/react-wrapper";
-import GoogleMap from "@components/GoogleMap";
 import GoogleMapReact from "google-map-react";
-import { Marker } from "@components/Icons";
+import { useSearchParams } from "next/navigation";
+import Loading from "../loading";
+import PageNotFound from "../not-found";
 
 type Props = {};
 
