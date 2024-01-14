@@ -42,7 +42,7 @@ export default function Page({}: Props) {
       setIsLoading(true);
     },
     onSuccess: (data) => {
-      localStorage.setItem("userInfo", JSON.stringify(data.data.data));
+      sessionStorage.setItem("userInfo", JSON.stringify(data.data.data));
       router.replace("/");
     },
     onError: () => {},
@@ -56,7 +56,7 @@ export default function Page({}: Props) {
   };
 
   return (
-    <div className=" absolute top-0 left-0 w-full h-full flex flex-col gap-6 justify-center items-center p-12 md:p-4">
+    <div className="flex flex-col gap-6 justify-center items-center p-12 md:p-4 h-screen">
       <Image
         width={64}
         height={64}
@@ -66,7 +66,7 @@ export default function Page({}: Props) {
 
       <Card
         isBlurred
-        className="border-none   w-full dark:bg-default-100/20"
+        className="border-none   w-full dark:bg-default-100/20 max-w-[600px]"
         shadow="sm"
       >
         <CardBody>

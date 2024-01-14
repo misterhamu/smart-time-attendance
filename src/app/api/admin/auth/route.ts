@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { SignJWT, importJWK } from "jose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { compareSync, genSaltSync, hashSync } from "bcrypt-ts";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,26 +12,42 @@ const supabase = createClient(
 );
 
 export const POST = async (req: Request, res: Response) => {
-  const { mobile } = await req.json();
+  const { username, password } = await req.json();
+
+  //   const password = "admin@tpc2024";
+  //   const salt = genSaltSync(10);
+  //     const hash = hashSync("admin@tpc2024", salt);
+  //     console.log(hash)
 
   try {
-    let { data: tpc_employee, error } = await supabase
-      .from("tpc_employee")
+    let { data, error } = await supabase
+      .from("tpc_admin")
       .select("*")
-      .eq("mobile", mobile);
+      .eq("username", username);
 
     if (error) {
       console.log("error:", error);
       return NextResponse.json(
-        { message: "Failed to find employee please try again.", code: 4002 },
+        { message: "Failed to find user please try again.", code: 4002 },
         { status: 400 }
       );
     }
-    console.log("tpc_employee: ", tpc_employee);
-    if (tpc_employee?.length == 0) {
+
+    if (data?.length == 0) {
       return NextResponse.json(
         { message: "Failed data not found", code: 4004 },
-        { status: 400 }
+        { status: 404 }
+      );
+    }
+
+    if (compareSync(password, data[0].password) == false) {
+      console.log("password false");
+      return NextResponse.json(
+        {
+          message: "Failed user or pass incorrect, please try again.",
+          code: 4004,
+        },
+        { status: 404 }
       );
     }
 
@@ -39,19 +56,19 @@ export const POST = async (req: Request, res: Response) => {
       k: process.env.JOSE_SECRET,
     };
     const secretKey = await importJWK(secretJWK, "HS256");
-    const token = await new SignJWT({ mobile })
+    const token = await new SignJWT({ data })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
       .setExpirationTime("10h")
       .sign(secretKey);
 
-    cookies().set("token", token);
-    cookies().set("userInfo", JSON.stringify(tpc_employee && tpc_employee[0]));
+    cookies().set("adminToken", token);
+    // cookies().set("userInfo", JSON.stringify(data && data[0]));
 
     return NextResponse.json(
       {
         message: "Login successfully.",
-        data: tpc_employee && tpc_employee[0],
+        data: data && data[0],
       },
       { status: 200 }
     );

@@ -7,8 +7,8 @@ import { Card, CardBody, Divider, Image, Link } from "@nextui-org/react";
 import { useQuery } from "@tanstack/react-query";
 import GoogleMapReact from "google-map-react";
 import { useSearchParams } from "next/navigation";
-import Loading from "../loading";
-import PageNotFound from "../not-found";
+import Loading from "../../loading";
+import PageNotFound from "../../not-found";
 
 type Props = {};
 

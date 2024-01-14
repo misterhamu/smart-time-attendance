@@ -30,6 +30,18 @@ export interface AttendanceRecordResponse {
   data: AttendanceRecord[];
 }
 
+export interface AllRecords {
+  id: number;
+  mobile: string;
+  checkin: string;
+  checkout: string;
+  created_at: string;
+  updated_at: string;
+  record_id: string;
+  position: string;
+  name: string;
+}
+
 export interface AttendanceRecord {
   id: number;
   mobile: string;
@@ -67,4 +79,9 @@ export interface LoginRequest {
 
 export interface RecordRequest {
   id: string;
+}
+
+export interface AdminAuthRequest {
+  username: string;
+  password: string;
 }

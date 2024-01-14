@@ -1,26 +1,21 @@
 "use client";
+import { logout } from "@libs/api";
 import {
   NavbarBrand,
   NavbarContent,
   Navbar as NextUINavbar,
 } from "@nextui-org/navbar";
-import NextLink from "next/link";
-import { ThemeSwitch } from "./Theme-switch";
-import { usePathname, useRouter } from "next/navigation";
 import { Button, Image } from "@nextui-org/react";
-import { logout } from "@libs/api";
+import NextLink from "next/link";
+import { useRouter } from "next/navigation";
+import { ThemeSwitch } from "./Theme-switch";
 
-type Props = {};
+type Props = {
+  mode?: string;
+};
 
-export default function Navbar({}: Props) {
-  const pageNoNavBar = ["/login","/record"];
-  const pathname = usePathname();
+export default function Navbar({ mode }: Props) {
   const router = useRouter();
-
-  if (pageNoNavBar.includes(pathname)) {
-    return;
-  }
-
   return (
     <NextUINavbar maxWidth="xl" position="sticky">
       <NavbarContent className="basis-1/5" justify="start">
@@ -45,7 +40,9 @@ export default function Navbar({}: Props) {
           size="sm"
           onClick={() => {
             logout();
-            router.replace("/login");
+            mode === "admin"
+              ? router.replace("/admin/login")
+              : router.replace("/login");
           }}
         >
           ออกจากระบบ

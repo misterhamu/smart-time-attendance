@@ -1,12 +1,16 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { NextResponse } from "next/server";
 
 export const POST = async (req: Request, res: Response) => {
   if (cookies().get("token")) {
     cookies().delete("token");
     cookies().delete("userInfo");
   }
+
+  if (cookies().get("adminToken")) {
+    cookies().delete("adminToken");
+  }
+
   return NextResponse.json(
     {
       message: "Logout successfully.",

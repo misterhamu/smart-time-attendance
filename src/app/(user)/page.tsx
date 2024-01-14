@@ -35,7 +35,7 @@ import { AxiosResponse } from "axios";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import * as yup from "yup";
-import Loading from "./loading";
+import Loading from "../loading";
 
 export default function Home() {
   const [userInfo, setUserInfo] = useState<TpcEmployee>();
@@ -66,7 +66,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    setUserInfo(JSON.parse(localStorage.getItem("userInfo") || ""));
+    setUserInfo(JSON.parse(sessionStorage.getItem("userInfo") || ""));
   }, []);
 
   if (record.loading) {

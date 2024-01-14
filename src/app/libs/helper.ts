@@ -85,6 +85,20 @@ export const getThaiDateFormat = (date: Date) => {
   return formattedDate;
 };
 
+export const getThaiDateTimeFormat = (date: Date) => {
+  const newDate = new Date(date);
+  const formattedDate = newDate.toLocaleDateString("th-Th", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    weekday: "short",
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return formattedDate;
+};
+
 export const getShortThaiDateFormat = (date: Date) => {
   const newDate = new Date(date);
   const formattedDate = newDate.toLocaleDateString("th-Th", {
@@ -140,3 +154,6 @@ export const resizeFile = async (file: File) =>
       "file"
     );
   });
+
+
+  

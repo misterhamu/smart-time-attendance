@@ -8,14 +8,14 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export const POST = async (req: Request, res: Response) => {
-  const { id } = await req.json();
+export const GET = async (req: Request, res: Response) => {
 
   try {
     let { data, error } = await supabase
       .from("tpc_time_attendance_record")
       .select(`*, tpc_employee(*)`)
-      .eq("record_id", id);
+      .order("created_at", { ascending: false });
+
 
     if (error) {
       console.log(error);
@@ -31,8 +31,8 @@ export const POST = async (req: Request, res: Response) => {
 
     return NextResponse.json(
       {
-        message: `Data retreive ${id} successfully.`,
-        data: data && data[0],
+        message: `Data retreive  successfully.`,
+        data: data && data,
       },
       { status: 200 }
     );

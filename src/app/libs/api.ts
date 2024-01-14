@@ -1,8 +1,18 @@
-import { AttendanceRecordResponse, LoginRequest, RecordRequest } from "@/types/index";
+import { AdminAuthRequest, AttendanceRecordResponse, LoginRequest, RecordRequest } from "@/types/index";
 import HttpClient from "./http-clients";
 import { cookies } from "next/headers";
 import axios from "axios";
 
+// admin case
+export const allRecords = async () => {
+  return HttpClient.get<AttendanceRecordResponse>(`/api/admin/all-records`);
+};
+
+export const adminAuth = async (req: AdminAuthRequest) => {
+  return HttpClient.post("/api/admin/auth", req);
+};
+
+// user case
 export const login = async (req: LoginRequest) => {
   return HttpClient.post("/api/login", req);
 };
