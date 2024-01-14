@@ -27,6 +27,7 @@ export default function Page({}: Props) {
     reset,
     formState: { errors, isValid },
   } = useForm<LoginRequest>({
+    // @ts-ignore
     resolver: yupResolver(schema),
     mode: "onChange",
     reValidateMode: "onChange",
