@@ -1,6 +1,8 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
+import { importJWK, jwtVerify } from "jose";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 const supabase = createClient(
@@ -11,6 +13,24 @@ const supabase = createClient(
 export const GET = async (req: Request, res: Response) => {
 
   try {
+
+    const token = cookies().get("adminToken")!.value;
+    const secretJWK = {
+      kty: "oct",
+      k: process.env.JOSE_SECRET,
+    };
+    const secretKey = await importJWK(secretJWK, "HS256");
+    const { payload } = await jwtVerify(token, secretKey);
+
+    console.log("payload:", payload);
+    if (!payload) {
+      return NextResponse.json(
+        { message: "Failed unauthorized.", code: 4001 },
+        { status: 401 }
+      );
+
+    }
+
     let { data, error } = await supabase
       .from("tpc_time_attendance_record")
       .select(`*, tpc_employee(*)`)
