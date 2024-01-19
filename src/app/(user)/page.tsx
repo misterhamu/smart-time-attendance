@@ -36,8 +36,10 @@ import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import * as yup from "yup";
 import Loading from "../loading";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const router = useRouter();
   const [userInfo, setUserInfo] = useState<TpcEmployee>();
   const record = useAttendaceRecord();
   const time = useTime();
@@ -66,7 +68,11 @@ export default function Home() {
   };
 
   useEffect(() => {
-    setUserInfo(JSON.parse(localStorage.getItem("userInfo") || ""));
+    if(sessionStorage.getItem("userInfo")){
+      setUserInfo(JSON.parse(sessionStorage.getItem("userInfo") || ""));
+    } else{
+      router.replace("/login");
+    }
   }, []);
 
   if (record.loading) {

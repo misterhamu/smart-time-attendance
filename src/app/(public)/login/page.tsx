@@ -43,7 +43,7 @@ export default function Page({}: Props) {
       setIsLoading(true);
     },
     onSuccess: (data) => {
-      localStorage.setItem("userInfo", JSON.stringify(data.data.data));
+      sessionStorage.setItem("userInfo", JSON.stringify(data.data.data));
       router.replace("/");
     },
     onError: () => {},
