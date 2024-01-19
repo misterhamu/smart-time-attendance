@@ -66,7 +66,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    setUserInfo(JSON.parse(sessionStorage.getItem("userInfo") || ""));
+    setUserInfo(JSON.parse(localStorage.getItem("userInfo") || ""));
   }, []);
 
   if (record.loading) {
