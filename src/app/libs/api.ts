@@ -1,4 +1,4 @@
-import { AdminAuthRequest, AttendanceRecordResponse, LoginRequest, RecordRequest } from "@/types/index";
+import { AdminAuthRequest, AttendanceRecordResponse, CSVResponse, LoginRequest, RecordRequest } from "@/types/index";
 import HttpClient from "./http-clients";
 import { cookies } from "next/headers";
 import axios from "axios";
@@ -6,6 +6,10 @@ import axios from "axios";
 // admin case
 export const allRecords = async () => {
   return HttpClient.get<AttendanceRecordResponse>(`/api/admin/all-records`);
+};
+
+export const downloadCSV = async () => {
+  return HttpClient.get<CSVResponse>(`/api/admin/csv`);
 };
 
 export const adminAuth = async (req: AdminAuthRequest) => {

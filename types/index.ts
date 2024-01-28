@@ -25,6 +25,11 @@ export type MyLocation = {
   lng: number;
 };
 
+export interface CSVResponse {
+  message: string;
+  data: string;
+}
+
 export interface AttendanceRecordResponse {
   message: string;
   data: AttendanceRecord[];
